@@ -1,15 +1,15 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/dashboard";
-import AttendancePage from "./pages/attendencepage";
+import Attendencepage from "./pages/attendencepage";
 import NotFound from "./pages/notfound";
 
 function App() {
   return (
-      <Routes>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/attendancepage" element={<AttendancePage />} />
-        <Route path="notfound" element={<NotFound />} />
-      </Routes>
+    <Routes>
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/attendancepage" element={<Attendencepage />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 }
 

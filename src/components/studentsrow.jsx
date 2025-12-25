@@ -1,26 +1,25 @@
-function StudentRow({ student }) {
+function StudentRow({ student, toggleStatus }) {
   return (
-    <tr className="border-b">
-      <td className="px-6 py-4">{student.roll}</td>
-      <td className="px-6 py-4">{student.name}</td>
-      <td className="px-6 py-4 text-center">
+    <tr>
+      <td>{student.roll}</td>
+      <td>{student.name}</td>
+      <td>
         <button
+          onClick={() => toggleStatus(student.id)}
           className={
             student.status === "present"
-              ? "bg-green-500 text-white px-4 py-1 rounded-full"
-              : "bg-red-500 text-white px-4 py-1 rounded-full"
+              ? "bg-green-500"
+              : "bg-red-500"
           }
         >
           {student.status}
         </button>
       </td>
-      <td className="px-6 py-4">
+      <td>
         <input
           type="text"
           value={student.remarks}
-          placeholder="Add remarks"
-          className="w-full px-2 py-1 border rounded"
-          readOnly
+          onChange={(e) => console.log(e.target.value)}
         />
       </td>
     </tr>
