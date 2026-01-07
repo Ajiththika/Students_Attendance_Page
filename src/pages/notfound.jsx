@@ -8,7 +8,7 @@ function NotFound() {
         <p>Page not found</p>
 
         <Link
-          to="/notfound" className="text-indigo-600 underline"
+          to="/" className="text-indigo-600 underline" 
         >
           Go back home
         </Link>

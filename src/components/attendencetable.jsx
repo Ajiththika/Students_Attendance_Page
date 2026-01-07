@@ -1,19 +1,20 @@
-import StudentRow from "./studentsrow";
-
-function AttendanceTable({ students, toggleStatus }) {
+ function Header () {
   return (
-    <table className="w-full">
-      <tbody>
-        {students.map(student => (
-          <StudentRow
-            key={student.id}
-            student={student}
-            toggleStatus={toggleStatus}
-          />
-        ))}
-      </tbody>
-    </table>
+  <>
+    <header className="bg-white shadow-md border-b border-gray-200">
+    <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <h1 className="text-xl font-semibold text-gray-900">Student Attendance</h1>
+      <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg">
+        Add New Attendance
+      </button>
+    </div>
+  </header>
+
+  {/* Main Content */}
+  <main className="max-w-7xl mx-auto px-4 py-8"></main>
+
+  </>
   );
 }
 
-export default AttendanceTable;
+export default Header;

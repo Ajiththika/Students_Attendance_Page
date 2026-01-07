@@ -9,7 +9,7 @@ function Dashboard() {
         <h1 className="text-3xl font-bold">Welcome to Attendance System</h1>
 
         <button
-          onClick={() => navigate("/attendancepage")}
+          onClick={() => navigate("/attendancepage")} 
           className="bg-indigo-600 text-white px-6 py-3 rounded-lg"
         >
           Go to Attendance
