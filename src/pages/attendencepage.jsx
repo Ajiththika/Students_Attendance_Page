@@ -1,83 +1,88 @@
 import { useState, useEffect } from "react";
 import Header from "../components/header";
-import Form from "../components/attendenceform";
 
 const initialData = [
-  { id: 1, roll: "001", name: "Alice Johnson", status: "present", remarks: "" },
-  { id: 2, roll: "002", name: "Bob Smith", status: "absent", remarks: "Sick leave" },
-  { id: 3, roll: "003", name: "Alex", status: "present", remarks: "" },
+  { id: 1, roll: "001", name: "Alice Johnson", status: "present" },
+  { id: 2, roll: "002", name: "Bob Smith", status: "absent" },
+  { id: 3, roll: "003", name: "Alex", status: "present" },
 ];
 
 function Attendencepage() {
   const [students, setStudents] = useState(() => {
-    const saved = localStorage.getItem("attendance_data");
-    return saved ? JSON.parse(saved) : initialData;
+    // Load remarks from storage
+    const savedRemarks = JSON.parse(localStorage.getItem("persistent_remarks") || "{}");
+    return initialData.map(s => ({
+      ...s,
+      remarks: savedRemarks[s.id] || "" 
+    }));
   });
-  const [searchQuery, setSearchQuery] = useState("");
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showModal, setShowModal] = useState(false); // Controls the Popup
+  const [newStudentName, setNewStudentName] = useState("");
+
+  // Save ONLY the remarks to localStorage
   useEffect(() => {
-    localStorage.setItem("attendance_data", JSON.stringify(students));
+    const remarksMap = {};
+    students.forEach(s => { remarksMap[s.id] = s.remarks });
+    localStorage.setItem("persistent_remarks", JSON.stringify(remarksMap));
   }, [students]);
 
   const toggleStatus = (id) => {
-    setStudents(students.map(s => 
+    setStudents(prev => prev.map(s => 
       s.id === id ? { ...s, status: s.status === "present" ? "absent" : "present" } : s
     ));
   };
 
   const handleRemarkChange = (id, newRemark) => {
-    setStudents(students.map(s => 
+    setStudents(prev => prev.map(s => 
       s.id === id ? { ...s, remarks: newRemark } : s
     ));
+  };
+
+  // Logic to add student from the popup
+  const handleConfirmAdd = (e) => {
+    e.preventDefault();
+    if (newStudentName.trim()) {
+      const newStudent = {
+        id: Date.now(),
+        roll: `00${students.length + 1}`,
+        name: newStudentName,
+        status: "present",
+        remarks: ""
+      };
+      setStudents([...students, newStudent]);
+      setNewStudentName("");
+      setShowModal(false); // Close popup after adding
+    }
   };
 
   const filteredStudents = students.filter(s =>
     s.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const total = students.length;
-  const presentCount = students.filter(s => s.status === "present").length;
-  const absentCount = total - presentCount;
-
-  const exportCSV = () => {
-    const headers = "Roll,Name,Status,Remarks\n";
-    const rows = students.map(s => `${s.roll},${s.name},${s.status},${s.remarks}`).join("\n");
-    const blob = new Blob([headers + rows], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "attendance.csv";
-    link.click();
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 pb-10">
-      <Header />
+      {/* Pass setShowModal to the Header button */}
+      <Header onOpenModal={() => setShowModal(true)} />
       
       <main className="max-w-7xl mx-auto px-4 py-8 space-y-6">
-        {/* BONUS TASK 5: Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <StatCard title="Total Students" count={total} color="text-blue-600" />
-          <StatCard title="Present" count={presentCount} color="text-green-600" />
-          <StatCard title="Absent" count={absentCount} color="text-red-600" />
-        </div>
-
         <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
           <input 
             type="text" 
             placeholder="Search by name..." 
-            className="border p-2 rounded w-64"
+            className="border p-2 rounded w-64 outline-none focus:ring-2 focus:ring-indigo-500"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <button onClick={exportCSV} className="bg-green-600 text-white px-4 py-2 rounded">
-            Export CSV
-          </button>
+          <div className="text-sm font-medium text-gray-500">
+            Total: {students.length}
+          </div>
         </div>
 
         <div className="bg-white shadow rounded-lg overflow-hidden">
           <table className="min-w-full">
-            <thead className="bg-gray-100">
+            <thead className="bg-gray-100 border-b">
               <tr>
                 <th className="px-6 py-3 text-left">Roll</th>
                 <th className="px-6 py-3 text-left">Name</th>
@@ -98,16 +103,40 @@ function Attendencepage() {
           </table>
         </div>
       </main>
-    </div>
-  );
-}
 
-// Sub-components for better organization
-function StatCard({ title, count, color }) {
-  return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-indigo-500">
-      <p className="text-sm text-gray-500 font-bold uppercase">{title}</p>
-      <p className={`text-3xl font-bold ${color}`}>{count}</p>
+      {/* MODAL POPUP */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Add New Student</h2>
+            <form onSubmit={handleConfirmAdd}>
+              <input 
+                autoFocus
+                type="text" 
+                placeholder="Enter Student Name" 
+                className="w-full border p-2 rounded mb-4 outline-none focus:ring-2 focus:ring-indigo-500"
+                value={newStudentName}
+                onChange={(e) => setNewStudentName(e.target.value)}
+              />
+              <div className="flex justify-end gap-2">
+                <button 
+                  type="button" 
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                >
+                  Confirm
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -120,7 +149,7 @@ function StudentRow({ student, toggleStatus, handleRemarkChange }) {
       <td className="px-6 py-4">
         <button
           onClick={() => toggleStatus(student.id)}
-          className={`px-4 py-1 rounded-full text-sm font-bold uppercase ${
+          className={`px-4 py-1 rounded-full text-sm font-bold uppercase transition ${
             student.status === "present" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
           }`}
         >
@@ -130,9 +159,9 @@ function StudentRow({ student, toggleStatus, handleRemarkChange }) {
       <td className="px-6 py-4">
         <input
           type="text"
-          value={student.remarks}
+          value={student.remarks || ""}
           onChange={(e) => handleRemarkChange(student.id, e.target.value)}
-          className="border rounded px-2 py-1 w-full text-sm"
+          className="border rounded px-2 py-1 w-full text-sm outline-none focus:border-indigo-500"
           placeholder="Add note..."
         />
       </td>

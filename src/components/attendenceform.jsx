@@ -1,21 +1,21 @@
-import { useState } from "react";
-
-function Form({ students }) {
-  const [search, setSearch] = useState("");
+function Form({ students, search, setSearch }) {
+  // Calculate stats for the Summary
+  const presentCount = students.filter(s => s.status === "present").length;
 
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-lg shadow-sm border">
-      <div className="relative flex-1">
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
         <input
           type="text"
-          placeholder="Search students..."
-          className="w-full pl-4 pr-4 py-2 border rounded-md focus:ring-2 focus:ring-indigo-500 outline-none"
+          placeholder="Search by name..."
+          className="border rounded-md px-4 py-2 w-64 outline-indigo-500"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)} // Updates filter live
         />
-      </div>
-      <div className="text-sm font-medium text-gray-600">
-        Total Students: <span className="text-indigo-600">{students.length}</span>
+        <div className="text-gray-600 font-medium">
+          Total Students: <span className="text-indigo-600">{students.length}</span> | 
+          Present: <span className="text-green-600">{presentCount}</span>
+        </div>
       </div>
     </div>
   );
