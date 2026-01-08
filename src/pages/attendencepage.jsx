@@ -2,18 +2,33 @@ import { useState, useEffect } from "react";
 import Header from "../components/header";
 
 const initialData = [
-  { id: 1, roll: "001", name: "Alice Johnson", status: "present" },
-  { id: 2, roll: "002", name: "Bob Smith", status: "absent" },
-  { id: 3, roll: "003", name: "Alex", status: "present" },
+  {
+    id: 1,
+    roll: "001",
+    name: "Alice Johnson",
+    status: "present",
+    date: "2026-01-08",
+  },
+  {
+    id: 2,
+    roll: "002",
+    name: "Bob Smith",
+    status: "absent",
+    date: "2026-01-08",
+  },
+  { id: 3, roll: "003", name: "Alex", status: "present", date: "2026-01-08" },
 ];
 
 function Attendencepage() {
   const [students, setStudents] = useState(() => {
     // Load remarks from storage
-    const savedRemarks = JSON.parse(localStorage.getItem("persistent_remarks") || "{}");
-    return initialData.map(s => ({
+    const savedRemarks = JSON.parse(
+      localStorage.getItem("persistent_remarks") || "{}"
+    );
+    return initialData.map((s) => ({
       ...s,
-      remarks: savedRemarks[s.id] || "" 
+      remarks: savedRemarks[s.id] || "",
+      date: s.date || new Date().toLocaleDateString(),
     }));
   });
 
@@ -24,20 +39,26 @@ function Attendencepage() {
   // Save ONLY the remarks to localStorage
   useEffect(() => {
     const remarksMap = {};
-    students.forEach(s => { remarksMap[s.id] = s.remarks });
+    students.forEach((s) => {
+      remarksMap[s.id] = s.remarks;
+    });
     localStorage.setItem("persistent_remarks", JSON.stringify(remarksMap));
   }, [students]);
 
   const toggleStatus = (id) => {
-    setStudents(prev => prev.map(s => 
-      s.id === id ? { ...s, status: s.status === "present" ? "absent" : "present" } : s
-    ));
+    setStudents((prev) =>
+      prev.map((s) =>
+        s.id === id
+          ? { ...s, status: s.status === "present" ? "absent" : "present" }
+          : s
+      )
+    );
   };
 
   const handleRemarkChange = (id, newRemark) => {
-    setStudents(prev => prev.map(s => 
-      s.id === id ? { ...s, remarks: newRemark } : s
-    ));
+    setStudents((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, remarks: newRemark } : s))
+    );
   };
 
   // Logic to add student from the popup
@@ -49,7 +70,8 @@ function Attendencepage() {
         roll: `00${students.length + 1}`,
         name: newStudentName,
         status: "present",
-        remarks: ""
+        remarks: "",
+        date: new Date().toLocaleDateString(),
       };
       setStudents([...students, newStudent]);
       setNewStudentName("");
@@ -57,26 +79,32 @@ function Attendencepage() {
     }
   };
 
-  const filteredStudents = students.filter(s =>
+  const filteredStudents = students.filter((s) =>
     s.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const presentCount = students.filter((s) => s.status === "present").length;
+  const absentCount = students.filter((s) => s.status === "absent").length;
+  const totalCount = students.length;
 
   return (
     <div className="min-h-screen bg-gray-50 pb-10">
       {/* Pass setShowModal to the Header button */}
       <Header onOpenModal={() => setShowModal(true)} />
-      
+
       <main className="max-w-7xl mx-auto px-4 py-8 space-y-6">
         <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
-          <input 
-            type="text" 
-            placeholder="Search by name..." 
+          <input
+            type="text"
+            placeholder="Search by name..."
             className="border p-2 rounded w-64 outline-none focus:ring-2 focus:ring-indigo-500"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <div className="text-sm font-medium text-gray-500">
-            Total: {students.length}
+          <div className="text-sm font-medium text-gray-500 space-x-4">
+            <span>Present: {presentCount}</span>
+            <span>Absent: {absentCount}</span>
+            <span>Total: {totalCount}</span>
           </div>
         </div>
 
@@ -86,16 +114,17 @@ function Attendencepage() {
               <tr>
                 <th className="px-6 py-3 text-left">Roll</th>
                 <th className="px-6 py-3 text-left">Name</th>
+                <th className="px-6 py-3 text-left">Date</th>
                 <th className="px-6 py-3 text-left">Status</th>
                 <th className="px-6 py-3 text-left">Remarks</th>
               </tr>
             </thead>
             <tbody>
-              {filteredStudents.map(s => (
-                <StudentRow 
-                  key={s.id} 
-                  student={s} 
-                  toggleStatus={toggleStatus} 
+              {filteredStudents.map((s) => (
+                <StudentRow
+                  key={s.id}
+                  student={s}
+                  toggleStatus={toggleStatus}
                   handleRemarkChange={handleRemarkChange}
                 />
               ))}
@@ -110,24 +139,24 @@ function Attendencepage() {
           <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
             <h2 className="text-xl font-bold mb-4">Add New Student</h2>
             <form onSubmit={handleConfirmAdd}>
-              <input 
+              <input
                 autoFocus
-                type="text" 
-                placeholder="Enter Student Name" 
+                type="text"
+                placeholder="Enter Student Name"
                 className="w-full border p-2 rounded mb-4 outline-none focus:ring-2 focus:ring-indigo-500"
                 value={newStudentName}
                 onChange={(e) => setNewStudentName(e.target.value)}
               />
               <div className="flex justify-end gap-2">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setShowModal(false)}
                   className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
                 >
                   Cancel
                 </button>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
                 >
                   Confirm
@@ -146,11 +175,14 @@ function StudentRow({ student, toggleStatus, handleRemarkChange }) {
     <tr className="border-b">
       <td className="px-6 py-4">{student.roll}</td>
       <td className="px-6 py-4 font-medium">{student.name}</td>
+      <td className="px-6 py-4">{student.date}</td>
       <td className="px-6 py-4">
         <button
           onClick={() => toggleStatus(student.id)}
           className={`px-4 py-1 rounded-full text-sm font-bold uppercase transition ${
-            student.status === "present" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+            student.status === "present"
+              ? "bg-green-100 text-green-700"
+              : "bg-red-100 text-red-700"
           }`}
         >
           {student.status}
